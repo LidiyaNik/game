@@ -37,6 +37,20 @@ right = False
 animCount = 0
 isJump = False
 jumpCount = 10
+LastMove = 'right'
+
+class machine():
+    def __init__(self, x, y, radius, color, facing):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.facing = facing #в яку сторону летить
+        self.vel = 8 * facing #швидкість снаряду (facing = 1 - вправо, -1 - вліво)
+
+    def draw(self, win):
+        pygame.draw.circle(win, self.color , (self.x, self.y),
+         self.radius)
 
 def drawWindow():
     win.blit(fon,(0, 0))
@@ -54,9 +68,13 @@ def drawWindow():
     else:
         win.blit(playerStand, (x, y))
     #pygame.draw.rect(win, (13, 175, 184), (x, y, widht, hight))
+    for bullet in bullets:
+        bullet.draw(win)
     pygame.display.update()
 
+
 run = True
+bullets = []
 while run:
     clock.tick(30)
     #pygame.time.delay(50)
@@ -65,15 +83,36 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-        keys = pygame.key.get_pressed()
+    for bullet in bullets:
+        if bullet.x < 1000 and bullet.x > 0:
+            bullet.x += bullet.vel
+        else:
+            bullets.pop(bullets.index(bullet))
+
+
+    keys = pygame.key.get_pressed()
+    
+    if keys[pygame.K_f]:
+        if LastMove == 'right':
+            facing = 1
+        else:
+            facing = -1
+
+        #к-сть снарядів
+        if len(bullets)<5:
+            bullets.append(machine(round(x + widht // 2), 
+            round(y + hight // 2), 5, (255, 0, 0), facing )) #//2 - снаряд вилетить з центру розташування героя
+
     if keys[pygame.K_LEFT] and x>10:
         x -= speed
         left = True
         right = False
+        LastMove = 'left'
     elif keys[pygame.K_RIGHT] and x<950-widht-10:
         x += speed
         left = False
         right = True
+        LastMove = 'right'
     else:
         right = False
         left = False
